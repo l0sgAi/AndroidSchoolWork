@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent">
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingStart="14dp"
+        android:paddingBottom="14dp"
+        android:paddingEnd="14dp"
+        android:paddingTop="14dp">
+
+        <Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:title="表单填写"
+            android:subtitle="个人信息"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/general_background"
+            android:titleTextColor="@color/white"
+            android:subtitleTextColor="@color/white"/>
+
+        <ImageView
+            android:id="@+id/imageUrl"
+            android:src="@drawable/user"
+            android:layout_width="100dp"
+            android:layout_height="80dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            android:text="基本信息"
+            android:textSize="17dp"/>
+
+        <EditText
+            android:id="@+id/et_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp"
+            android:background="@drawable/edit_text_background"
+            android:hint="@string/name"
+            android:inputType="textPersonName"
+            android:padding="10dp"
+            android:minLines="1"/>
+
+        <EditText
+            android:id="@+id/et_student_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="15dp"
+            android:background="@drawable/edit_text_background"
+            android:hint="@string/id"
+            android:inputType="number"
+            android:padding="10dp" />
+
+        <EditText
+            android:id="@+id/et_hobby"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp"
+            android:background="@drawable/edit_text_background"
+            android:hint="爱好"
+            android:inputType="text"
+            android:padding="10dp"
+            android:minLines="1"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
+            android:text="@string/sexGroup"
+            android:textSize="17dp"/>
+
+        <RadioGroup
+            android:id="@+id/sexGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
+            <RadioButton
+                android:id="@+id/sexMan"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:paddingEnd="15dp"
+                android:text="男"/>
+
+            <RadioButton
+                android:id="@+id/sexWoman"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="女"/>
+        </RadioGroup>
+
+        <TextView
+            android:paddingTop="25dp"
+            android:paddingBottom="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="选择你的学院"
+            android:textSize="17dp"/>
+
+        <Spinner
+            android:id="@+id/institutionSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+
+        <TextView
+            android:paddingTop="25dp"
+            android:paddingBottom="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="选择你的专业"
+            android:textSize="17dp"/>
+
+        <Spinner
+            android:id="@+id/majorSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+
+        <Button
+            android:layout_marginTop="35dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/submit"
+            android:id="@+id/submitId01"
+            android:background="@drawable/general_background"
+            android:textColor="@color/white"/>
+
+    </LinearLayout>
+</ScrollView>
+
+
+
