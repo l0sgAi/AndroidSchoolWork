@@ -1,9 +1,12 @@
 package com.losgai.works
 
 import android.app.AlertDialog
+import android.app.AlertDialog.Builder
 import android.os.Bundle
 import android.util.Log
+import android.view.ContextMenu
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -73,13 +76,24 @@ class MainActivity : ComponentActivity() {
         var adapterStu = StudentAdapter(this, R.layout.inner_list_layout, students)
         listViewStudents.adapter = adapterStu
 
+        // 设置长按监听器
+        listViewStudents.setOnItemLongClickListener { parent, view, position, id ->
+            // 获取长按的表项数据
+            val itemStu: Student? = adapterStu.getItem(position)
+            Log.i("INFO", "stuName: " + itemStu?.stuName)
+            if (itemStu != null) {
+                showDialogOperation(adapterStu, itemStu)
+            }
+            true
+        }
+
         btnAdd.setOnClickListener {
             // 弹出表单页面
             showDialog(adapterStu)
         }
     }
 
-    private fun showDialog(adapterStu : StudentAdapter) {
+    private fun showDialog(adapterStu: StudentAdapter) {
         val builder = AlertDialog.Builder(this)
         val inflater = LayoutInflater.from(this)
         val dialogView = inflater.inflate(R.layout.activity_main, null)
@@ -166,7 +180,7 @@ class MainActivity : ComponentActivity() {
                 major.selectedItem.toString(),
                 hobby.text.toString()
             )
-            if (data.stuName.isNotEmpty() && data.stuId.isNotEmpty() && data.sex!="null") {
+            if (data.stuName.isNotEmpty() && data.stuId.isNotEmpty() && data.sex != "null") {
                 // 将新学生对象添加到列表
                 students.add(data)
                 // 通知适配器数据已改变
@@ -201,6 +215,48 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun showDialogOperation(adapterStu: StudentAdapter, itemStu: Student) {
+        val builder = AlertDialog.Builder(this)
+        val inflater = LayoutInflater.from(this)
+        val dialogView = inflater.inflate(R.layout.opera_select, null)
+        builder.setView(dialogView)
+        Log.i("INFO", "showDialogOperation")
+
+        val delBtn =  dialogView.findViewById<Button>(R.id.delete)
+        val editBtn =  dialogView.findViewById<Button>(R.id.edit)
+
+        // 创建并显示对话框
+        val alertDialog = builder.create()
+        alertDialog.show()
+
+        delBtn.setOnClickListener() {
+            // 处理删除操作
+            // 创建并显示确认对话框
+            val confirmBuilder = AlertDialog.Builder(this)
+            confirmBuilder.setMessage("确认删除该学生信息？")
+                .setPositiveButton("确认") { _, _ ->
+                    // 用户点击确认后，执行删除操作
+                    // 使用filter函数过滤出不包含特定stuId的Student对象
+                    val updatedStudents = students.filter { it.stuId != itemStu.stuId }
+                    // 清空原列表并添加过滤后的学生列表
+                    students.clear()
+                    students.addAll(updatedStudents)
+                    // 通知适配器数据已改变
+                    adapterStu.notifyDataSetChanged()
+                    alertDialog.dismiss() // 关闭操作选择对话框
+                }
+                .setNegativeButton("取消", null) // 用户点击取消，不做任何操作
+            confirmBuilder.create().show()
+            alertDialog.dismiss() // 当操作完成后，关闭对话框
+        }
+
+        editBtn.setOnClickListener() {
+            // 处理修改操作
+            alertDialog.dismiss() // 当操作完成后，关闭对话框
+        }
+
+    }
 }
 
 @Composable
@@ -218,3 +274,4 @@ fun GreetingPreview() {
         Greeting("Android")
     }
 }
+

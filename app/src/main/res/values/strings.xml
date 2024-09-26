@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">WORK01</string>
+    <string name="app_name">WORK03</string>
     <string name="submit">提交表单</string>
     <string name="name">姓名</string>
     <string name="id">学号</string>
@@ -7,4 +7,5 @@
     <string name="subTitle">基本表单</string>
     <string name="sexGroup">性别</string>
     <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_loading">LoadingActivity</string>
 </resources>
