@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
             "S3305",
             "张三",
             "男",
-            "计算机学院",
+            "计算机与通信工程学院",
             "计算机科学与技术",
             "音乐"
         )
@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
                 "S3306",
                 "李四",
                 "女",
-                "计算机学院",
+                "计算机与通信工程学院",
                 "软件工程",
                 "跑步"
             )
@@ -80,7 +80,7 @@ class MainActivity : ComponentActivity() {
         listViewStudents.setOnItemLongClickListener { parent, view, position, id ->
             // 获取长按的表项数据
             val itemStu: Student? = adapterStu.getItem(position)
-            Log.i("INFO", "stuName: " + itemStu?.stuName)
+            Log.i("INFO", "stuName: " + itemStu?.stuName + " " + itemStu?.major)
             if (itemStu != null) {
                 showDialogOperation(adapterStu, itemStu)
             }
@@ -223,8 +223,8 @@ class MainActivity : ComponentActivity() {
         builder.setView(dialogView)
         Log.i("INFO", "showDialogOperation")
 
-        val delBtn =  dialogView.findViewById<Button>(R.id.delete)
-        val editBtn =  dialogView.findViewById<Button>(R.id.edit)
+        val delBtn = dialogView.findViewById<Button>(R.id.delete)
+        val editBtn = dialogView.findViewById<Button>(R.id.edit)
 
         // 创建并显示对话框
         val alertDialog = builder.create()
@@ -253,9 +253,171 @@ class MainActivity : ComponentActivity() {
 
         editBtn.setOnClickListener() {
             // 处理修改操作
+            showEditDialog(adapterStu, itemStu)
             alertDialog.dismiss() // 当操作完成后，关闭对话框
         }
 
+    }
+
+    private fun showEditDialog(adapterStu: StudentAdapter, itemStu: Student) {
+        val builder = AlertDialog.Builder(this)
+        val inflater = LayoutInflater.from(this)
+        val dialogView = inflater.inflate(R.layout.activity_main, null)
+        builder.setView(dialogView)
+
+
+        val name: EditText = dialogView.findViewById(R.id.et_name)
+        name.setText(itemStu.stuName)
+
+        val stuId: EditText = dialogView.findViewById(R.id.et_student_id)
+        stuId.setText(itemStu.stuId)
+        stuId.isEnabled = false;//去掉点击时编辑框下面横线:
+        stuId.isFocusable = false;//不可编辑
+        stuId.isFocusableInTouchMode = false;//不可编辑
+
+
+        var sex = "null"
+        val sexGroup: RadioGroup = dialogView.findViewById(R.id.sexGroup)
+        sexGroup.setOnCheckedChangeListener { group, checkedId ->
+            // 当RadioButton的选择改变时，这个方法会被调用
+            val radioButton: RadioButton = group.findViewById(checkedId)
+            sex = radioButton.text.toString()
+        }
+        // 设置性别默认值
+        if (itemStu.sex == "男") {
+            dialogView.findViewById<RadioButton>(R.id.sexMan).isChecked = true
+        } else if (itemStu.sex == "女") {
+            dialogView.findViewById<RadioButton>(R.id.sexWoman).isChecked = true
+        }
+
+
+        // 获取资源文件中的字符串数组
+        val institutions = resources.getStringArray(R.array.academy)
+        // 学院选项的下拉列表
+        val institution: Spinner = dialogView.findViewById(R.id.institutionSpinner)
+        // 专业选项的下拉列表
+        val major: Spinner = dialogView.findViewById(R.id.majorSpinner)
+
+        // 创建ArrayAdapter，并指定布局（这里使用的是默认的simple_spinner_item布局）
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, institutions)
+        // 指定下拉列表的布局样式
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        // 将适配器设置到Spinner上
+        institution.adapter = adapter
+
+        // 创建一个OnItemSelectedListener
+        institution.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                // 这里是当选项被选中时执行的代码
+                val selectedItem = parent.getItemAtPosition(position) as String // 适配器返回的是String类型
+                Log.d("INFO", "Selected item: $selectedItem")
+
+                if (selectedItem == "计算机与通信工程学院") {
+                    // 获取资源文件中的字符串数组
+                    val strArr = resources.getStringArray(R.array.cs)
+                    // 创建ArrayAdapter，并指定布局
+                    val adapter01 =
+                        ArrayAdapter(activityContext, android.R.layout.simple_spinner_item, strArr)
+                    // 指定下拉列表的布局样式
+                    adapter01.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    // 将适配器设置到Spinner上
+                    major.adapter = adapter01
+                } else if (selectedItem == "电气学院") {
+                    // 获取资源文件中的字符串数组
+                    val strArr = resources.getStringArray(R.array.ee)
+                    // 创建ArrayAdapter，并指定布局
+                    val adapter01 =
+                        ArrayAdapter(activityContext, android.R.layout.simple_spinner_item, strArr)
+                    // 指定下拉列表的布局样式
+                    adapter01.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    // 将适配器设置到Spinner上
+                    major.adapter = adapter01
+                }
+
+                // 只有创建了onItemSelectedListener之后，默认值才能生效
+                institution.setSelection(institutions.indexOf(itemStu.institution))
+                if (itemStu.institution == institutions[0]) { // 计算机学院
+                    val majors = resources.getStringArray(R.array.cs)
+                    major.setSelection(majors.indexOf(itemStu.major))
+                } else if (itemStu.institution == institutions[1]) { // 电气学院
+                    val majors = resources.getStringArray(R.array.ee)
+                    major.setSelection(majors.indexOf(itemStu.major))
+                }
+            }
+
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                // 这里是当没有选项被选中时执行的代码
+            }
+        }
+
+        val hobby: EditText = dialogView.findViewById(R.id.et_hobby)
+        hobby.setText(itemStu.hobby)
+
+        val buttonSubmit: Button = dialogView.findViewById(R.id.submitId01)
+        val dialog = builder.create()
+
+        buttonSubmit.setOnClickListener {
+            val data: Student = Student(
+                R.drawable.user,
+                stuId.text.toString(),
+                name.text.toString(),
+                sex,
+                institution.selectedItem.toString(),
+                major.selectedItem.toString(),
+                hobby.text.toString()
+            )
+            if (data.stuName.isNotEmpty() && data.stuId.isNotEmpty() && data.sex != "null") {
+                // 使用filter找到编辑的学生
+                val studentToModify = students.firstOrNull { it.stuId == data.stuId }
+
+                // 检查是否找到了学生，并进行修改操作
+                studentToModify?.let {
+                    // 在这里修改学生对象的属性，例如：
+                    it.stuName = data.stuName
+                    it.sex = data.sex
+                    it.institution = data.institution
+                    it.major = data.major
+                    it.hobby = data.hobby
+                }
+
+                // 通知适配器数据已改变
+                adapterStu.notifyDataSetChanged()
+
+                val inflater = layoutInflater
+                val layout: View =
+                    inflater.inflate(R.layout.toast_view, findViewById(R.id.toast_image))
+                // 设置图片和文本
+                val text = layout.findViewById<TextView>(R.id.toast_text)
+                text.text = "数据已提交"
+                // 创建Toast并设置自定义布局
+                val toast = Toast(applicationContext)
+                toast.duration = Toast.LENGTH_SHORT
+                toast.view = layout
+                toast.show() // 提示信息
+                dialog.dismiss()
+            } else {
+                val inflater = layoutInflater
+                val layout: View =
+                    inflater.inflate(R.layout.toast_view_e, findViewById(R.id.toast_image))
+
+                // 设置图片和文本
+                val text = layout.findViewById<TextView>(R.id.toast_text)
+                text.text = "提交数据失败，至少输入姓名、性别和学号！"
+
+                // 创建Toast并设置自定义布局
+                val toast = Toast(applicationContext)
+                toast.duration = Toast.LENGTH_SHORT
+                toast.view = layout
+                toast.show() // 提示信息
+            }
+        }
+        dialog.show()
     }
 }
 
