@@ -4,6 +4,8 @@ import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -15,7 +17,7 @@ import android.widget.RadioGroup
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -24,54 +26,60 @@ import com.losgai.works.adapter.StudentAdapter
 import com.losgai.works.entity.Student
 import com.losgai.works.ui.theme.MyApplicationTheme
 
-class MainActivity : ComponentActivity() {
-    private var students = mutableListOf<Student>() // 创建可变学生列表
+//ComponentActivity()
+class MainActivity : AppCompatActivity() {
+    // 创建3个初始学生对象，加入初始列表
+    val student1 = Student(
+        R.drawable.user,
+        "S3305",
+        "张三",
+        "男",
+        "计算机与通信工程学院",
+        "计算机科学与技术",
+        "音乐"
+    )
+    val student2 =
+        Student(
+            R.drawable.user,
+            "S3306",
+            "李四",
+            "女",
+            "计算机与通信工程学院",
+            "软件工程",
+            "跑步"
+        )
+    val student3 =
+        Student(
+            R.drawable.user,
+            "S3307",
+            "王五",
+            "女",
+            "电气学院",
+            "电机工程",
+            "游泳"
+        )
+    private var students = mutableListOf(student1, student2, student3) // 创建可变学生列表
     private lateinit var listViewStudents: ListView
-    private lateinit var btnAdd: Button
+
+    //private lateinit var btnAdd: Button
     private val activityContext = this
+    private lateinit var adapterStu: StudentAdapter
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.stu_list_main)
-        // 创建3个初始学生对象，加入初始列表
-        val student1 = Student(
-            R.drawable.user,
-            "S3305",
-            "张三",
-            "男",
-            "计算机与通信工程学院",
-            "计算机科学与技术",
-            "音乐"
-        )
-        val student2 =
-            Student(
-                R.drawable.user,
-                "S3306",
-                "李四",
-                "女",
-                "计算机与通信工程学院",
-                "软件工程",
-                "跑步"
-            )
-        val student3 =
-            Student(
-                R.drawable.user,
-                "S3307",
-                "王五",
-                "女",
-                "电气学院",
-                "电机工程",
-                "游泳"
-            )
-        students = mutableListOf(student1, student2, student3)
 
         // 绑定控件
         listViewStudents = findViewById(R.id.listViewStudents)
-        btnAdd = findViewById(R.id.btnAdd) // 初始化 Button
+        // btnAdd = findViewById(R.id.stuAdd) // 初始化 Button
 
         // 创建适配器并设置给 ListView 定义适配器 控件-桥梁-数据
-        var adapterStu = StudentAdapter(this, R.layout.inner_list_layout, students)
+        adapterStu = StudentAdapter(this, R.layout.inner_list_layout, students)
         listViewStudents.adapter = adapterStu
+
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar_stu)
+        setSupportActionBar(toolbar)
 
         // 设置长按监听器
         listViewStudents.setOnItemLongClickListener { parent, view, position, id ->
@@ -84,11 +92,33 @@ class MainActivity : ComponentActivity() {
             true
         }
 
-        btnAdd.setOnClickListener {
-            // 弹出表单页面
-            showDialog(adapterStu)
+//        btnAdd.setOnClickListener {
+//            // 弹出表单页面
+//            showDialog(adapterStu)
+//        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean { // 菜单配合toolbar
+        menuInflater.inflate(R.menu.toolbar_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean { // 菜单点击事件监听
+        return when (item.itemId) {
+            R.id.menu_stu_add -> {
+                showDialog(adapterStu)
+                true
+            }
+
+            R.id.menu_stu_refresh -> {
+                Toast.makeText(this, "刷新", Toast.LENGTH_SHORT).show()
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
         }
     }
+
 
     private fun showDialog(adapterStu: StudentAdapter) {
         val builder = AlertDialog.Builder(this)
