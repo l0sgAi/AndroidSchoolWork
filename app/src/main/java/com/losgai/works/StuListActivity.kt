@@ -1,6 +1,7 @@
 package com.losgai.works
 
 import android.app.AlertDialog
+import android.icu.util.Calendar
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,6 +11,7 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.DatePicker
 import android.widget.EditText
 import android.widget.ListView
 import android.widget.RadioButton
@@ -36,7 +38,10 @@ class MainActivity : AppCompatActivity() {
         "男",
         "计算机与通信工程学院",
         "计算机科学与技术",
-        "音乐"
+        "音乐",
+        2001,
+        0,
+        1
     )
     val student2 =
         Student(
@@ -46,7 +51,10 @@ class MainActivity : AppCompatActivity() {
             "女",
             "计算机与通信工程学院",
             "软件工程",
-            "跑步"
+            "跑步",
+            2002,
+            0,
+            1
         )
     val student3 =
         Student(
@@ -56,7 +64,10 @@ class MainActivity : AppCompatActivity() {
             "女",
             "电气学院",
             "电机工程",
-            "游泳"
+            "游泳",
+            2003,
+            0,
+            1
         )
     private var students = mutableListOf(student1, student2, student3) // 创建可变学生列表
     private lateinit var listViewStudents: ListView
@@ -192,20 +203,42 @@ class MainActivity : AppCompatActivity() {
         }
 
         val hobby: EditText = dialogView.findViewById(R.id.et_hobby)
+        val birthDate: DatePicker = dialogView.findViewById(R.id.birthDateStu)
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        var curYear = calendar.get(Calendar.YEAR)
+        var curMonth = calendar.get(Calendar.MONTH)
+        var curDay = calendar.get(Calendar.DAY_OF_MONTH)
+
+        // 初始化DatePicker并设置日期改变监听器
+        birthDate.init(year, month, day) { _, year, monthOfYear, dayOfMonth ->
+            // 日期被改变时，监听并赋值
+            val selectedDate = "$year-$monthOfYear-$dayOfMonth"
+            Log.d("INFO", "Selected date: $selectedDate")
+            curYear = year
+            curMonth = monthOfYear
+            curDay = dayOfMonth
+        }
         val buttonSubmit: Button = dialogView.findViewById(R.id.submitId01)
 
         val dialog = builder.create()
         dialog.show()
 
         buttonSubmit.setOnClickListener {
-            val data: Student = Student(
+            val data = Student(
                 R.drawable.user,
                 stuId.text.toString(),
                 name.text.toString(),
                 sex,
                 institution.selectedItem.toString(),
                 major.selectedItem.toString(),
-                hobby.text.toString()
+                hobby.text.toString(),
+                curYear,
+                curMonth,
+                curDay
             )
             if (data.stuName.isNotEmpty() && data.stuId.isNotEmpty() && data.sex != "null") {
                 // 将新学生对象添加到列表
@@ -385,19 +418,42 @@ class MainActivity : AppCompatActivity() {
 
         val hobby: EditText = dialogView.findViewById(R.id.et_hobby)
         hobby.setText(itemStu.hobby)
+        val birthDate: DatePicker = dialogView.findViewById(R.id.birthDateStu)
+        val year = itemStu.birthYear
+        val month = itemStu.birthMonth
+        val day = itemStu.birhday
+
+        var curYear = itemStu.birthYear
+        var curMonth = itemStu.birthMonth
+        var curDay = itemStu.birhday
+
+        // 初始化DatePicker并设置日期改变监听器
+        birthDate.init(year, month, day) { _, year, monthOfYear, dayOfMonth ->
+            // 日期被改变时，监听并赋值
+            val selectedDate = "$year-$monthOfYear-$dayOfMonth"
+            Log.d("INFO", "Selected date: $selectedDate")
+            curYear = year
+            curMonth = monthOfYear
+            curDay = dayOfMonth
+        }
 
         val buttonSubmit: Button = dialogView.findViewById(R.id.submitId01)
         val dialog = builder.create()
 
         buttonSubmit.setOnClickListener {
-            val data: Student = Student(
+            val selectedDate = "$curYear-$curMonth-$curDay"
+            Log.d("INFO", "提交的日期date: $selectedDate")
+            val data = Student(
                 R.drawable.user,
                 stuId.text.toString(),
                 name.text.toString(),
                 sex,
                 institution.selectedItem.toString(),
                 major.selectedItem.toString(),
-                hobby.text.toString()
+                hobby.text.toString(),
+                curYear,
+                curMonth,
+                curDay
             )
             if (data.stuName.isNotEmpty() && data.stuId.isNotEmpty() && data.sex != "null") {
                 // 使用filter找到编辑的学生
@@ -411,6 +467,9 @@ class MainActivity : AppCompatActivity() {
                     it.institution = data.institution
                     it.major = data.major
                     it.hobby = data.hobby
+                    it.birthYear = data.birthYear
+                    it.birthMonth = data.birthMonth
+                    it.birhday = data.birhday
                 }
 
                 // 通知适配器数据已改变

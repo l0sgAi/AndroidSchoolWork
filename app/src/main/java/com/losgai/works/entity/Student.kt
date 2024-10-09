@@ -7,5 +7,8 @@ class Student(
     var sex: String,
     var institution: String,
     var major: String,
-    var hobby: String
+    var hobby: String,
+    var birthYear: Int,
+    var birthMonth: Int,
+    var birhday: Int
 ) {}

@@ -25,6 +25,7 @@ class StudentAdapter(context: Context, resource: Int, objects: MutableList<Stude
         val stuInstitution = view.findViewById<TextView>(R.id.insitution)
         val stuMajor = view.findViewById<TextView>(R.id.major)
         val stuHobby = view.findViewById<TextView>(R.id.hobby)
+        val stuBirthday = view.findViewById<TextView>(R.id.birthDate)
 
         // Set the image and text for the views
         stuImage.setImageResource(student.imageUrl)
@@ -34,6 +35,8 @@ class StudentAdapter(context: Context, resource: Int, objects: MutableList<Stude
         stuInstitution.text = "学院： " + student.institution
         stuMajor.text = "专业： " + student.major
         stuHobby.text = "爱好： " + student.hobby
+        stuBirthday.text =
+            "生日：" + student.birthYear + "-" + (student.birthMonth + 1) + "-" + student.birhday
 
         return view
     }
