@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="14dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="14dp">
+
+        <Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/general_background"
+            android:gravity="center_horizontal"
+            android:subtitle="输入搜索参数"
+            android:subtitleTextColor="@color/white"
+            android:title="搜索"
+            android:titleTextColor="@color/white" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:text="搜索参数"
+            android:textSize="17dp" />
+
+        <EditText
+            android:id="@+id/searchName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp"
+            android:background="@drawable/edit_text_background"
+            android:gravity="center_horizontal"
+            android:hint="姓名"
+            android:inputType="textPersonName"
+            android:minLines="1"
+            android:padding="10dp" />
+
+        <TextView
+            android:paddingTop="25dp"
+            android:paddingBottom="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="选择学院"
+            android:textSize="17dp"/>
+
+        <Spinner
+            android:id="@+id/institutionSpinnerSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+
+        <TextView
+            android:paddingTop="25dp"
+            android:paddingBottom="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="选择专业"
+            android:textSize="17dp"/>
+
+        <Spinner
+            android:id="@+id/majorSpinnerSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+
+        <Button
+            android:id="@+id/searchBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/general_background"
+            android:text="搜索"
+            android:textColor="@color/white" />
+
+    </LinearLayout>
+</ScrollView>

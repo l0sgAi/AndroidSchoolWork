@@ -8,6 +8,12 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/menu_stu_search"
+        android:icon="@drawable/search"
+        android:title="查询"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/menu_stu_refresh"
         android:icon="@drawable/refresh"
         android:title="刷新"

@@ -31,7 +31,7 @@ import com.losgai.works.ui.theme.MyApplicationTheme
 //ComponentActivity()
 class MainActivity : AppCompatActivity() {
     // 创建3个初始学生对象，加入初始列表
-    val student1 = Student(
+    private val student1 = Student(
         R.drawable.user,
         "S3305",
         "张三",
@@ -75,6 +75,8 @@ class MainActivity : AppCompatActivity() {
     //private lateinit var btnAdd: Button
     private val activityContext = this
     private lateinit var adapterStu: StudentAdapter
+    private lateinit var filteredStu: StudentAdapter // 这个适配器用于过滤后的学生列表
+    private val filteredResults: MutableList<Student> = mutableListOf()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,6 +89,7 @@ class MainActivity : AppCompatActivity() {
 
         // 创建适配器并设置给 ListView 定义适配器 控件-桥梁-数据
         adapterStu = StudentAdapter(this, R.layout.inner_list_layout, students)
+        // filteredStu = StudentAdapter(this, R.layout.inner_list_layout, filteredResults)
         listViewStudents.adapter = adapterStu
 
         val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar_stu)
@@ -95,18 +98,26 @@ class MainActivity : AppCompatActivity() {
         // 设置长按监听器
         listViewStudents.setOnItemLongClickListener { parent, view, position, id ->
             // 获取长按的表项数据
-            val itemStu: Student? = adapterStu.getItem(position)
-            Log.i("INFO", "stuName: " + itemStu?.stuName + " " + itemStu?.major)
-            if (itemStu != null) {
-                showDialogOperation(adapterStu, itemStu)
-            }
-            true
-        }
+            when (listViewStudents.adapter) {
+                adapterStu -> { // 非查询状态
+                    val itemStu: Student? = adapterStu.getItem(position)
+                    Log.i("INFO", "stuName: " + itemStu?.stuName + " " + itemStu?.major)
+                    if (itemStu != null)
+                        showDialogOperation(adapterStu, itemStu)
+                    true
+                }
 
-//        btnAdd.setOnClickListener {
-//            // 弹出表单页面
-//            showDialog(adapterStu)
-//        }
+                filteredStu -> { // 查询状态
+                    val itemStu: Student? = filteredStu.getItem(position)
+                    Log.i("INFO", "stuName: " + itemStu?.stuName + " " + itemStu?.major)
+                    if (itemStu != null)
+                        showDialogOperation(filteredStu, itemStu)
+                    true
+                }
+
+                else -> false
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean { // 菜单配合toolbar
@@ -121,8 +132,13 @@ class MainActivity : AppCompatActivity() {
                 true
             }
 
+            R.id.menu_stu_search -> {
+                showDialogSearch(adapterStu)
+                true
+            }
+
             R.id.menu_stu_refresh -> {
-                Toast.makeText(this, "刷新", Toast.LENGTH_SHORT).show()
+                reset("已刷新数据")
                 true
             }
 
@@ -130,6 +146,141 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun reset(msg: String, isShow: Boolean = true) {
+        listViewStudents.adapter = adapterStu
+        adapterStu.notifyDataSetChanged()
+        val inflater = layoutInflater
+        val layout: View =
+            inflater.inflate(R.layout.toast_view, findViewById(R.id.toast_image))
+        // 设置图片和文本
+        val text = layout.findViewById<TextView>(R.id.toast_text)
+        text.text = msg
+        // 创建Toast并设置自定义布局
+        val toast = Toast(applicationContext)
+        toast.duration = Toast.LENGTH_SHORT
+        toast.view = layout
+        toast.show() // 提示信息
+    }
+
+    private fun showDialogSearch(adapterStu: StudentAdapter) {
+        val builder = AlertDialog.Builder(this)
+        val inflater = LayoutInflater.from(this)
+        val dialogView = inflater.inflate(R.layout.search_layout, null)
+        builder.setView(dialogView)
+
+        val name: EditText = dialogView.findViewById(R.id.searchName) // 文本框
+
+        // 专业选项的下拉列表
+        val major: Spinner = dialogView.findViewById(R.id.majorSpinnerSearch)
+        // 学院选项的下拉列表
+        val institution: Spinner = dialogView.findViewById(R.id.institutionSpinnerSearch)
+        // 获取资源文件中的字符串数组
+        val institutions = resources.getStringArray(R.array.academy)
+        // 创建ArrayAdapter，并指定布局（这里使用的是默认的simple_spinner_item布局）
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, institutions)
+        // 指定下拉列表的布局样式
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        // 将适配器设置到Spinner上
+        institution.adapter = adapter
+
+        // 创建一个OnItemSelectedListener
+        institution.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                // 这里是当选项被选中时执行的代码
+                val selectedItem = parent.getItemAtPosition(position) as String // 适配器返回的是String类型
+                Log.d("INFO", "Selected item: $selectedItem")
+
+                if (selectedItem == "计算机与通信工程学院") {
+                    // 获取资源文件中的字符串数组
+                    val strArr = resources.getStringArray(R.array.cs)
+                    // 创建ArrayAdapter，并指定布局
+                    val adapter01 =
+                        ArrayAdapter(activityContext, android.R.layout.simple_spinner_item, strArr)
+                    // 指定下拉列表的布局样式
+                    adapter01.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    // 将适配器设置到Spinner上
+                    major.adapter = adapter01
+                } else if (selectedItem == "电气学院") {
+                    // 获取资源文件中的字符串数组
+                    val strArr = resources.getStringArray(R.array.ee)
+                    // 创建ArrayAdapter，并指定布局
+                    val adapter01 =
+                        ArrayAdapter(activityContext, android.R.layout.simple_spinner_item, strArr)
+                    // 指定下拉列表的布局样式
+                    adapter01.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    // 将适配器设置到Spinner上
+                    major.adapter = adapter01
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                // 这里是当没有选项被选中时执行的代码
+            }
+        }
+
+        val buttonSubmit: Button = dialogView.findViewById(R.id.searchBtn)
+
+        val dialog = builder.create()
+        dialog.show()
+
+        buttonSubmit.setOnClickListener {
+            // 清除之前的过滤结果
+            filteredResults.clear()
+
+            val inputName = name.text
+            val selectedInstitution = institution.selectedItem.toString()
+            val selectedMajor = major.selectedItem.toString()
+
+            val filteredStudents = students.filter { student ->
+                (inputName.isNullOrEmpty() ||
+                        student.stuName.contains(inputName))
+                        &&
+                        (selectedInstitution.isEmpty() ||
+                                student.institution.contains(selectedInstitution))
+                        &&
+                        (selectedMajor.isEmpty() ||
+                                student.major.contains(selectedMajor))
+            }.toMutableList() // 过滤查询条件，如果为空不对这类查询进行过滤
+
+            if (filteredStudents.isNotEmpty()) { // 查到结果，改变适配器
+                filteredStu = StudentAdapter(this, R.layout.inner_list_layout, filteredStudents)
+                listViewStudents.adapter = filteredStu
+                filteredStu.notifyDataSetChanged()
+                val inflater = layoutInflater
+                val layout: View =
+                    inflater.inflate(R.layout.toast_view, findViewById(R.id.toast_image))
+                // 设置图片和文本
+                val text = layout.findViewById<TextView>(R.id.toast_text)
+                text.text = "查询成功，共有${filteredStudents.size}个结果"
+                // 创建Toast并设置自定义布局
+                val toast = Toast(applicationContext)
+                toast.duration = Toast.LENGTH_SHORT
+                toast.view = layout
+                toast.show() // 提示信息
+                dialog.dismiss() // 退出弹窗
+            } else { // 没查到结果，提示
+                val inflater = layoutInflater
+                val layout: View =
+                    inflater.inflate(R.layout.toast_view_e, findViewById(R.id.toast_image))
+
+                // 设置图片和文本
+                val text = layout.findViewById<TextView>(R.id.toast_text)
+                text.text = "无查询结果"
+
+                // 创建Toast并设置自定义布局
+                val toast = Toast(applicationContext)
+                toast.duration = Toast.LENGTH_SHORT
+                toast.view = layout
+                toast.show() // 提示信息
+            }
+        }
+
+    }
 
     private fun showDialog(adapterStu: StudentAdapter) {
         val builder = AlertDialog.Builder(this)
@@ -305,6 +456,7 @@ class MainActivity : AppCompatActivity() {
                     // 通知适配器数据已改变
                     adapterStu.notifyDataSetChanged()
                     alertDialog.dismiss() // 关闭操作选择对话框
+                    reset("数据已删除") // 刷新回到主界面
                 }
                 .setNegativeButton("取消", null) // 用户点击取消，不做任何操作
             confirmBuilder.create().show()
@@ -350,7 +502,6 @@ class MainActivity : AppCompatActivity() {
             dialogView.findViewById<RadioButton>(R.id.sexWoman).isChecked = true
         }
 
-
         // 获取资源文件中的字符串数组
         val institutions = resources.getStringArray(R.array.academy)
         // 学院选项的下拉列表
@@ -364,6 +515,7 @@ class MainActivity : AppCompatActivity() {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         // 将适配器设置到Spinner上
         institution.adapter = adapter
+        institution.setSelection(institutions.indexOf(itemStu.institution)) // 设置初始学院
 
         // 创建一个OnItemSelectedListener
         institution.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -399,17 +551,15 @@ class MainActivity : AppCompatActivity() {
                     major.adapter = adapter01
                 }
 
-                // 只有创建了onItemSelectedListener之后，默认值才能生效
-                institution.setSelection(institutions.indexOf(itemStu.institution))
-                if (itemStu.institution == institutions[0]) { // 计算机学院
+                // 设置专业下拉列表默认值
+                if (selectedItem == institutions[0]) { // 计算机学院
                     val majors = resources.getStringArray(R.array.cs)
                     major.setSelection(majors.indexOf(itemStu.major))
-                } else if (itemStu.institution == institutions[1]) { // 电气学院
+                } else if (selectedItem == institutions[1]) { // 电气学院
                     val majors = resources.getStringArray(R.array.ee)
                     major.setSelection(majors.indexOf(itemStu.major))
                 }
             }
-
 
             override fun onNothingSelected(parent: AdapterView<*>) {
                 // 这里是当没有选项被选中时执行的代码
@@ -471,22 +621,11 @@ class MainActivity : AppCompatActivity() {
                     it.birthMonth = data.birthMonth
                     it.birhday = data.birhday
                 }
-
                 // 通知适配器数据已改变
                 adapterStu.notifyDataSetChanged()
 
-                val inflater = layoutInflater
-                val layout: View =
-                    inflater.inflate(R.layout.toast_view, findViewById(R.id.toast_image))
-                // 设置图片和文本
-                val text = layout.findViewById<TextView>(R.id.toast_text)
-                text.text = "数据已提交"
-                // 创建Toast并设置自定义布局
-                val toast = Toast(applicationContext)
-                toast.duration = Toast.LENGTH_SHORT
-                toast.view = layout
-                toast.show() // 提示信息
                 dialog.dismiss()
+                reset("数据修改成功") // 刷新回到主界面
             } else {
                 val inflater = layoutInflater
                 val layout: View =
@@ -494,7 +633,7 @@ class MainActivity : AppCompatActivity() {
 
                 // 设置图片和文本
                 val text = layout.findViewById<TextView>(R.id.toast_text)
-                text.text = "提交数据失败，至少输入姓名、性别和学号！"
+                text.text = "修改数据失败，至少输入姓名、性别和学号！"
 
                 // 创建Toast并设置自定义布局
                 val toast = Toast(applicationContext)

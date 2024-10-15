@@ -18,17 +18,6 @@
         app:titleMarginStart="30dp"
         app:titleTextColor="@color/white" />
 
-<!--    <Button-->
-<!--        android:id="@+id/stuAdd"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_centerHorizontal="true"-->
-<!--        android:layout_marginStart="15dp"-->
-<!--        android:layout_marginTop="15dp"-->
-<!--        android:background="@drawable/general_background"-->
-<!--        android:text="添加学生信息"-->
-<!--        android:textColor="@color/white" />-->
-
     <view
         android:id="@+id/listViewStudents"
         class="androidx.appcompat.app.AlertController$RecycleListView"
