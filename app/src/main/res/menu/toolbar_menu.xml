@@ -18,4 +18,10 @@
         android:icon="@drawable/refresh"
         android:title="刷新"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_stu_delete"
+        android:icon="@drawable/delete"
+        android:title="退出"
+        app:showAsAction="ifRoom" />
 </menu>

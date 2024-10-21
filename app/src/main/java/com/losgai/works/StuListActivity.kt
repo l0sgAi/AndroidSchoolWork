@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         0,
         1
     )
-    val student2 =
+    private val student2 =
         Student(
             R.drawable.user,
             "S3306",
@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
             0,
             1
         )
-    val student3 =
+    private val student3 =
         Student(
             R.drawable.user,
             "S3307",
@@ -81,6 +81,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("TEST", "生命周期 onCreate() 调用")
+        Toast.makeText(this, "生命周期 onCreate() 调用", Toast.LENGTH_SHORT).show()
         setContentView(R.layout.stu_list_main)
 
         // 绑定控件
@@ -96,7 +98,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
         // 设置长按监听器
-        listViewStudents.setOnItemLongClickListener { parent, view, position, id ->
+        listViewStudents.setOnItemLongClickListener { _, _, position, _ ->
             // 获取长按的表项数据
             when (listViewStudents.adapter) {
                 adapterStu -> { // 非查询状态
@@ -120,6 +122,36 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStart() { // Activity正在被启动
+        super.onStart()
+        Log.d("TEST", "生命周期 onStart() 调用")
+        Toast.makeText(this, "生命周期 onStart() 调用", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onResume() { // Activity出现在前台工作，用户可见
+        super.onResume()
+        Log.d("TEST", "生命周期 onResume() 调用")
+        Toast.makeText(this, "生命周期 onResume() 调用", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onPause() { // Activity失去焦点，用户不可见
+        super.onPause()
+        Log.d("TEST", "生命周期 onResume() 调用")
+        Toast.makeText(this, "生命周期 onPause() 调用", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onStop() { // Activity完全不可见，用户不可见
+        super.onStop()
+        Log.d("TEST", "生命周期 onResume() 调用")
+        Toast.makeText(this, "生命周期 onStop() 调用", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onDestroy() { // Activity被销毁时调用
+        super.onDestroy()
+        Log.d("TEST", "生命周期 onDestroy() 调用")
+        Toast.makeText(this, "生命周期 onDestroy() 调用", Toast.LENGTH_SHORT).show()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean { // 菜单配合toolbar
         menuInflater.inflate(R.menu.toolbar_menu, menu)
         return true
@@ -139,6 +171,11 @@ class MainActivity : AppCompatActivity() {
 
             R.id.menu_stu_refresh -> {
                 reset("已刷新数据")
+                true
+            }
+
+            R.id.menu_stu_delete -> {
+                finish()
                 true
             }
 
@@ -441,7 +478,7 @@ class MainActivity : AppCompatActivity() {
         val alertDialog = builder.create()
         alertDialog.show()
 
-        delBtn.setOnClickListener() {
+        delBtn.setOnClickListener {
             // 处理删除操作
             // 创建并显示确认对话框
             val confirmBuilder = AlertDialog.Builder(this)
@@ -463,7 +500,7 @@ class MainActivity : AppCompatActivity() {
             alertDialog.dismiss() // 当操作完成后，关闭对话框
         }
 
-        editBtn.setOnClickListener() {
+        editBtn.setOnClickListener {
             // 处理修改操作
             showEditDialog(adapterStu, itemStu)
             alertDialog.dismiss() // 当操作完成后，关闭对话框
