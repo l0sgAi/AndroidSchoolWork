@@ -17,9 +17,12 @@ import com.losgai.works.ui.theme.MyApplicationTheme
 
 class LoginActivity : ComponentActivity() {
     private lateinit var loginBtn: Button
+    private lateinit var pauseBtn: Button
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.i("TEST", "生命周期 onCreate() 调用")
+        Log.i("TEST", "登录页面生命周期 onCreate() 调用")
+        Toast.makeText(this, "登录页面生命周期 onCreate() 调用", Toast.LENGTH_SHORT).show()
+
         setContentView(R.layout.login_layout) // 首先进入登录页面
         loginBtn = findViewById(R.id.loginBtn)
         loginBtn.setOnClickListener {
@@ -58,6 +61,48 @@ class LoginActivity : ComponentActivity() {
                 toast.show() // 提示信息
             }
         }
+
+        pauseBtn = findViewById(R.id.pauseBtn)
+        pauseBtn.setOnClickListener {
+           finish()
+        }
+    }
+
+    override fun onStart() { // Activity正在被启动
+        super.onStart()
+        Log.i("TEST", "登录页面生命周期 onStart() 调用")
+        Toast.makeText(this, "登录页面生命周期 onStart() 调用", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onRestart() { // Activity正在被启动
+        super.onRestart()
+        Log.i("TEST", "登录页面生命周期 onRestart() 调用")
+        Toast.makeText(this, "登录页面生命周期 onRestart() 调用", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onResume() { // Activity出现在前台工作，用户可见
+        super.onResume()
+        Log.i("TEST", "登录页面生命周期 onResume() 调用")
+        Toast.makeText(this, "登录页面生命周期 onResume() 调用", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onPause() { // Activity失去焦点，用户不可见
+        super.onPause()
+        Log.i("TEST", "登录页面生命周期 onPause() 调用")
+        Toast.makeText(this, "登录页面生命周期 onPause() 调用", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onStop() { // Activity完全不可见，用户不可见
+        super.onStop()
+        Log.i("TEST", "登录页面生命周期 onStop() 调用")
+        Toast.makeText(this, "登录页面生命周期 onStop() 调用", Toast.LENGTH_SHORT).show()
+    }
+
+
+    override fun onDestroy() { // Activity被销毁时调用
+        super.onDestroy()
+        Log.i("TEST", "登录页面生命周期 onDestroy() 调用")
+        Toast.makeText(this, "登录页面生命周期 onDestroy() 调用", Toast.LENGTH_SHORT).show()
     }
 }
 

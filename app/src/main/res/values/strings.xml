@@ -8,4 +8,5 @@
     <string name="sexGroup">性别</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="title_activity_loading">LoadingActivity</string>
+    <string name="title_activity_high_priority">HighPriorityActivity</string>
 </resources>

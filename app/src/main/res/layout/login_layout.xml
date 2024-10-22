@@ -74,5 +74,15 @@
             android:text="登录"
             android:textColor="@color/white" />
 
+        <Button
+            android:id="@+id/pauseBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/general_background"
+            android:text="退出"
+            android:textColor="@color/white" />
+
     </LinearLayout>
 </ScrollView>

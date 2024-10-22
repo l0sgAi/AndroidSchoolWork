@@ -6,34 +6,12 @@
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:gravity="center_horizontal"
         android:paddingTop="5dp"
         android:paddingBottom="5dp"
-        android:text="操作"
-        android:textSize="21dp" />
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="删除"
-        android:id="@+id/delete"
-        android:layout_gravity="center_vertical"
-        android:background="@drawable/general_background"
-        android:textColor="@color/white"
-        android:layout_margin="3dp"
-        android:textSize="19dp"/>
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="修改"
-        android:id="@+id/edit"
-        android:layout_gravity="center_vertical"
-        android:background="@drawable/general_background"
-        android:textColor="@color/white"
-        android:layout_margin="3dp"
-        android:textSize="19dp"/>
-
+        android:text="高内存占用测试"
+        android:textSize="78sp"
+        />
 
 </LinearLayout>

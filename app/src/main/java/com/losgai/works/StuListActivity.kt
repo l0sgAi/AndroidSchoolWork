@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
     private var students = mutableListOf(student1, student2, student3) // 创建可变学生列表
     private lateinit var listViewStudents: ListView
 
-    //private lateinit var btnAdd: Button
+    // private lateinit var btnAdd: Button
     private val activityContext = this
     private lateinit var adapterStu: StudentAdapter
     private lateinit var filteredStu: StudentAdapter // 这个适配器用于过滤后的学生列表
@@ -81,8 +81,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("TEST", "生命周期 onCreate() 调用")
-        Toast.makeText(this, "生命周期 onCreate() 调用", Toast.LENGTH_SHORT).show()
         setContentView(R.layout.stu_list_main)
 
         // 绑定控件
@@ -120,36 +118,6 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
-    }
-
-    override fun onStart() { // Activity正在被启动
-        super.onStart()
-        Log.d("TEST", "生命周期 onStart() 调用")
-        Toast.makeText(this, "生命周期 onStart() 调用", Toast.LENGTH_SHORT).show()
-    }
-
-    override fun onResume() { // Activity出现在前台工作，用户可见
-        super.onResume()
-        Log.d("TEST", "生命周期 onResume() 调用")
-        Toast.makeText(this, "生命周期 onResume() 调用", Toast.LENGTH_SHORT).show()
-    }
-
-    override fun onPause() { // Activity失去焦点，用户不可见
-        super.onPause()
-        Log.d("TEST", "生命周期 onResume() 调用")
-        Toast.makeText(this, "生命周期 onPause() 调用", Toast.LENGTH_SHORT).show()
-    }
-
-    override fun onStop() { // Activity完全不可见，用户不可见
-        super.onStop()
-        Log.d("TEST", "生命周期 onResume() 调用")
-        Toast.makeText(this, "生命周期 onStop() 调用", Toast.LENGTH_SHORT).show()
-    }
-
-    override fun onDestroy() { // Activity被销毁时调用
-        super.onDestroy()
-        Log.d("TEST", "生命周期 onDestroy() 调用")
-        Toast.makeText(this, "生命周期 onDestroy() 调用", Toast.LENGTH_SHORT).show()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean { // 菜单配合toolbar
