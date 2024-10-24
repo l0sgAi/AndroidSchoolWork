@@ -32,6 +32,7 @@ class LoginActivity : ComponentActivity() {
                 if(password == "123456"){
                     // 跳转加载页面
                     val intent = Intent(this, LoadingActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     startActivity(intent)
                 }
                 else{

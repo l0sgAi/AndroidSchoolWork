@@ -29,6 +29,7 @@ class LoadingActivity : ComponentActivity() {
         preButton.setOnClickListener{
             // 跳转到下一个页面
             val intent = Intent(this, HighPriorityActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
         }
         // 开始倒计时
