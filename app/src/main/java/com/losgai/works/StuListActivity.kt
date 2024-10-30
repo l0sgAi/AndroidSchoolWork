@@ -26,70 +26,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.losgai.works.adapter.StudentAdapter
 import com.losgai.works.entity.Student
+import com.losgai.works.helper.DatabaseHelper
 import com.losgai.works.ui.theme.MyApplicationTheme
 
-//ComponentActivity()
 class MainActivity : AppCompatActivity() {
-    // 创建3个初始学生对象，加入初始列表
-    private val student1 = Student(
-        R.drawable.user,
-        "S3305",
-        "张三",
-        "男",
-        "计算机与通信工程学院",
-        "计算机科学与技术",
-        "音乐",
-        2001,
-        0,
-        1
-    )
-    val student2 =
-        Student(
-            R.drawable.user,
-            "S3306",
-            "李四",
-            "女",
-            "计算机与通信工程学院",
-            "软件工程",
-            "跑步",
-            2002,
-            0,
-            1
-        )
-    val student3 =
-        Student(
-            R.drawable.user,
-            "S3307",
-            "王五",
-            "女",
-            "电气学院",
-            "电机工程",
-            "游泳",
-            2003,
-            0,
-            1
-        )
-    private var students = mutableListOf(student1, student2, student3) // 创建可变学生列表
     private lateinit var listViewStudents: ListView
-
-    //private lateinit var btnAdd: Button
     private val activityContext = this
     private lateinit var adapterStu: StudentAdapter
     private lateinit var filteredStu: StudentAdapter // 这个适配器用于过滤后的学生列表
-    private val filteredResults: MutableList<Student> = mutableListOf()
-
+    private var students: MutableList<Student> = mutableListOf()
+    private lateinit var databaseHelper: DatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.stu_list_main)
 
+        databaseHelper = DatabaseHelper(this) // 初始化数据库
+        databaseHelper.insertInitialStudentIfEmpty(this) // 插入初始数据
+        students = databaseHelper.getAllStudents()// 创建可变学生列表
+
         // 绑定控件
         listViewStudents = findViewById(R.id.listViewStudents)
-        // btnAdd = findViewById(R.id.stuAdd) // 初始化 Button
 
         // 创建适配器并设置给 ListView 定义适配器 控件-桥梁-数据
         adapterStu = StudentAdapter(this, R.layout.inner_list_layout, students)
-        // filteredStu = StudentAdapter(this, R.layout.inner_list_layout, filteredResults)
         listViewStudents.adapter = adapterStu
 
         val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar_stu)
@@ -148,18 +108,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun reset(msg: String, isShow: Boolean = true) {
         listViewStudents.adapter = adapterStu
+        students.clear()
+        students.addAll(databaseHelper.getAllStudents())
         adapterStu.notifyDataSetChanged()
-        val inflater = layoutInflater
-        val layout: View =
-            inflater.inflate(R.layout.toast_view, findViewById(R.id.toast_image))
-        // 设置图片和文本
-        val text = layout.findViewById<TextView>(R.id.toast_text)
-        text.text = msg
-        // 创建Toast并设置自定义布局
-        val toast = Toast(applicationContext)
-        toast.duration = Toast.LENGTH_SHORT
-        toast.view = layout
-        toast.show() // 提示信息
+        customToast(msg, R.layout.toast_view)
     }
 
     private fun showDialogSearch(adapterStu: StudentAdapter) {
@@ -229,57 +181,22 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
 
         buttonSubmit.setOnClickListener {
-            // 清除之前的过滤结果
-            filteredResults.clear()
 
-            val inputName = name.text
+            val inputName = name.text.toString()
             val selectedInstitution = institution.selectedItem.toString()
             val selectedMajor = major.selectedItem.toString()
 
-            val filteredStudents = students.filter { student ->
-                (inputName.isNullOrEmpty() ||
-                        student.stuName.contains(inputName))
-                        &&
-                        (selectedInstitution.isEmpty() ||
-                                student.institution.contains(selectedInstitution))
-                        &&
-                        (selectedMajor.isEmpty() ||
-                                student.major.contains(selectedMajor))
-            }.toMutableList() // 过滤查询条件，如果为空不对这类查询进行过滤
-
+            val filteredStudents = databaseHelper.queryStudents(selectedInstitution, selectedMajor, inputName)
             if (filteredStudents.isNotEmpty()) { // 查到结果，改变适配器
                 filteredStu = StudentAdapter(this, R.layout.inner_list_layout, filteredStudents)
                 listViewStudents.adapter = filteredStu
                 filteredStu.notifyDataSetChanged()
-                val inflater = layoutInflater
-                val layout: View =
-                    inflater.inflate(R.layout.toast_view, findViewById(R.id.toast_image))
-                // 设置图片和文本
-                val text = layout.findViewById<TextView>(R.id.toast_text)
-                text.text = "查询成功，共有${filteredStudents.size}个结果"
-                // 创建Toast并设置自定义布局
-                val toast = Toast(applicationContext)
-                toast.duration = Toast.LENGTH_SHORT
-                toast.view = layout
-                toast.show() // 提示信息
+                customToast("查询成功，共有${filteredStudents.size}个结果", R.layout.toast_view)
                 dialog.dismiss() // 退出弹窗
             } else { // 没查到结果，提示
-                val inflater = layoutInflater
-                val layout: View =
-                    inflater.inflate(R.layout.toast_view_e, findViewById(R.id.toast_image))
-
-                // 设置图片和文本
-                val text = layout.findViewById<TextView>(R.id.toast_text)
-                text.text = "无查询结果"
-
-                // 创建Toast并设置自定义布局
-                val toast = Toast(applicationContext)
-                toast.duration = Toast.LENGTH_SHORT
-                toast.view = layout
-                toast.show() // 提示信息
+                customToast("无查询结果", R.layout.toast_view_e)
             }
         }
-
     }
 
     private fun showDialog(adapterStu: StudentAdapter) {
@@ -393,36 +310,20 @@ class MainActivity : AppCompatActivity() {
             )
             if (data.stuName.isNotEmpty() && data.stuId.isNotEmpty() && data.sex != "null") {
                 // 将新学生对象添加到列表
-                students.add(data)
+                if(databaseHelper.insertStudent(data)){
+                    // 刷新数据
+                    students.clear()
+                    students.addAll(databaseHelper.getAllStudents())
+                    customToast("数据已提交", R.layout.toast_view)
+                }else{
+                    customToast("学号冲突", R.layout.toast_view_e)
+                }
+
                 // 通知适配器数据已改变
                 adapterStu.notifyDataSetChanged()
-
-                val inflater = layoutInflater
-                val layout: View =
-                    inflater.inflate(R.layout.toast_view, findViewById(R.id.toast_image))
-                // 设置图片和文本
-                val text = layout.findViewById<TextView>(R.id.toast_text)
-                text.text = "数据已提交"
-                // 创建Toast并设置自定义布局
-                val toast = Toast(applicationContext)
-                toast.duration = Toast.LENGTH_SHORT
-                toast.view = layout
-                toast.show() // 提示信息
                 dialog.dismiss()
             } else {
-                val inflater = layoutInflater
-                val layout: View =
-                    inflater.inflate(R.layout.toast_view_e, findViewById(R.id.toast_image))
-
-                // 设置图片和文本
-                val text = layout.findViewById<TextView>(R.id.toast_text)
-                text.text = "提交数据失败，至少输入姓名、性别和学号！"
-
-                // 创建Toast并设置自定义布局
-                val toast = Toast(applicationContext)
-                toast.duration = Toast.LENGTH_SHORT
-                toast.view = layout
-                toast.show() // 提示信息
+                customToast("修改数据失败，至少输入姓名、性别和学号！", R.layout.toast_view_e)
             }
         }
     }
@@ -448,13 +349,16 @@ class MainActivity : AppCompatActivity() {
             confirmBuilder.setMessage("确认删除该学生信息？")
                 .setPositiveButton("确认") { _, _ ->
                     // 用户点击确认后，执行删除操作
-                    // 使用filter函数过滤出不包含特定stuId的Student对象
-                    val updatedStudents = students.filter { it.stuId != itemStu.stuId }
-                    // 清空原列表并添加过滤后的学生列表
+                    val stuId = itemStu.stuId
+                    databaseHelper.deleteStudent(stuId)
                     students.clear()
-                    students.addAll(updatedStudents)
+                    students.addAll(databaseHelper.getAllStudents())
+
+                    Log.i("删除操作", "删除成功$students")
+
                     // 通知适配器数据已改变
                     adapterStu.notifyDataSetChanged()
+
                     alertDialog.dismiss() // 关闭操作选择对话框
                     reset("数据已删除") // 刷新回到主界面
                 }
@@ -606,43 +510,41 @@ class MainActivity : AppCompatActivity() {
                 curDay
             )
             if (data.stuName.isNotEmpty() && data.stuId.isNotEmpty() && data.sex != "null") {
-                // 使用filter找到编辑的学生
-                val studentToModify = students.firstOrNull { it.stuId == data.stuId }
-
-                // 检查是否找到了学生，并进行修改操作
-                studentToModify?.let {
-                    // 在这里修改学生对象的属性，例如：
-                    it.stuName = data.stuName
-                    it.sex = data.sex
-                    it.institution = data.institution
-                    it.major = data.major
-                    it.hobby = data.hobby
-                    it.birthYear = data.birthYear
-                    it.birthMonth = data.birthMonth
-                    it.birhday = data.birhday
+                // 执行更新
+                if(databaseHelper.updateStudent(data)){
+                    students.clear()
+                    students.addAll(databaseHelper.getAllStudents())
+                    Log.i("修改操作", "修改成功")
+                    customToast("数据已提交", R.layout.toast_view)
+                } else {
+                    Log.e("修改操作", "修改失败")
+                    customToast("修改数据失败", R.layout.toast_view_e)
                 }
+
                 // 通知适配器数据已改变
                 adapterStu.notifyDataSetChanged()
 
                 dialog.dismiss()
                 reset("数据修改成功") // 刷新回到主界面
             } else {
-                val inflater = layoutInflater
-                val layout: View =
-                    inflater.inflate(R.layout.toast_view_e, findViewById(R.id.toast_image))
-
-                // 设置图片和文本
-                val text = layout.findViewById<TextView>(R.id.toast_text)
-                text.text = "修改数据失败，至少输入姓名、性别和学号！"
-
-                // 创建Toast并设置自定义布局
-                val toast = Toast(applicationContext)
-                toast.duration = Toast.LENGTH_SHORT
-                toast.view = layout
-                toast.show() // 提示信息
+                customToast("修改数据失败，至少输入姓名、性别和学号！", R.layout.toast_view_e)
             }
         }
         dialog.show()
+    }
+
+    private fun customToast(textInput: String, background: Int) {
+        val inflater = layoutInflater
+        val layout: View =
+            inflater.inflate(background, findViewById(R.id.toast_image))
+        // 设置图片和文本
+        val text = layout.findViewById<TextView>(R.id.toast_text)
+        text.text = textInput
+        // 创建Toast并设置自定义布局
+        val toast = Toast(applicationContext)
+        toast.duration = Toast.LENGTH_SHORT
+        toast.view = layout
+        toast.show() // 提示信息
     }
 }
 
