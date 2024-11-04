@@ -1,11 +1,17 @@
 package com.losgai.works
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +26,7 @@ class AboutActivity : ComponentActivity() {
     private lateinit var databaseHelper: DatabaseHelper
     private lateinit var phoneBtn: Button
     private lateinit var emailBtn: Button
+    private lateinit var saveAboutTextBtn: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,6 +34,17 @@ class AboutActivity : ComponentActivity() {
         databaseHelper = DatabaseHelper(this)
         databaseHelper.insertInitialUserIfEmpty("admin", "123456",this)
         databaseHelper.insertInitialStudentIfEmpty(this)
+
+        // 尝试填入保存数据
+        val aboutText = findViewById<EditText>(R.id.aboutIntro)
+        val sharedPreferences = getSharedPreferences("about", Context.MODE_PRIVATE)
+        val savedText = sharedPreferences.getString("about", "")
+        aboutText.setText(savedText)
+
+        saveAboutTextBtn = findViewById(R.id.saveTextBtn)
+        saveAboutTextBtn.setOnClickListener{
+            saveAboutText(sharedPreferences)
+        }
 
         phoneBtn = findViewById(R.id.phoneBtn)
         phoneBtn.setOnClickListener {
@@ -53,6 +71,11 @@ class AboutActivity : ComponentActivity() {
         }
     }
 
+    private fun saveAboutText(sharedPreferences:SharedPreferences) {
+        sharedPreferences.edit().putString("about", findViewById<EditText>(R.id.aboutIntro).text.toString()).apply()
+        customToast("保存简介成功", R.layout.toast_view)
+    }
+
     private fun makePhoneCall() {
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -69,6 +92,20 @@ class AboutActivity : ComponentActivity() {
             callIntent.data = Uri.parse("tel:188xxxx8888")
             startActivity(callIntent)
         }
+    }
+
+    private fun customToast(textInput: String, background: Int) {
+        val inflater = layoutInflater
+        val layout: View =
+            inflater.inflate(background, findViewById(R.id.toast_image))
+        // 设置图片和文本
+        val text = layout.findViewById<TextView>(R.id.toast_text)
+        text.text = textInput
+        // 创建Toast并设置自定义布局
+        val toast = Toast(applicationContext)
+        toast.duration = Toast.LENGTH_SHORT
+        toast.view = layout
+        toast.show() // 提示信息
     }
 
     override fun onRequestPermissionsResult(

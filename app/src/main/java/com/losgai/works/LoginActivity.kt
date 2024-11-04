@@ -1,5 +1,7 @@
 package com.losgai.works
 
+import android.annotation.SuppressLint
+import android.content.Context
 import com.losgai.works.helper.DatabaseHelper
 import android.content.Intent
 import android.os.Bundle
@@ -7,6 +9,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -27,6 +30,9 @@ class LoginActivity : ComponentActivity() {
     private lateinit var registerBtn: Button
     private lateinit var databaseHelper: DatabaseHelper
 
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
+    private lateinit var saveAccount: Switch
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.login_layout) // 首先进入登录页面
@@ -34,14 +40,32 @@ class LoginActivity : ComponentActivity() {
         databaseHelper = DatabaseHelper(this) // 初始化数据库
         databaseHelper.insertInitialUserIfEmpty("admin", "123456", this)
 
+        // 尝试填入保存数据
         val usernameEditText = findViewById<EditText>(R.id.username)
         val passwordEditText = findViewById<EditText>(R.id.password)
+
+        val sharedPreferences = getSharedPreferences("config", Context.MODE_PRIVATE)
+        val savedUsername = sharedPreferences.getString("username", "")
+        val savedPassword = sharedPreferences.getString("password", "")
+
+        usernameEditText.setText(savedUsername)
+        passwordEditText.setText(savedPassword)
 
         loginBtn = findViewById(R.id.loginBtn)
         loginBtn.setOnClickListener {
             val username = usernameEditText.text.toString()
             val password = passwordEditText.text.toString()
             if (authenticateUser(username, password)) {
+                // 保存登陆成功的数据
+                saveAccount = findViewById(R.id.saveAccount)
+                if(saveAccount.isChecked){
+                    val sharedPreferences = this.getSharedPreferences("config", Context.MODE_PRIVATE)
+                    val editor = sharedPreferences.edit()
+                    editor.putString("username", username)
+                    editor.putString("password", password)
+                    editor.apply()
+                }
+
                 customToast("登录成功", R.layout.toast_view)
                 val intent = Intent(this, LoadingActivity::class.java)
                 startActivity(intent)

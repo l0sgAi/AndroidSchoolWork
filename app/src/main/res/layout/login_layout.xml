@@ -64,6 +64,17 @@
             android:inputType="textPassword"
             android:padding="10dp" />
 
+        <Switch
+            android:id="@+id/saveAccount"
+            android:layout_gravity="center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textOff="否"
+            android:textOn="是"
+            android:paddingEnd="15dp"
+            android:showText="true"
+            android:text="记住我"/>
+
         <Button
             android:id="@+id/loginBtn"
             android:layout_width="wrap_content"

@@ -67,5 +67,38 @@
             android:textSize="17dp"
             android:textColor="@color/darkGrey" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:text="应用简介"
+            android:textSize="17dp" />
+
+        <EditText
+            android:id="@+id/aboutIntro"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp"
+            android:background="@drawable/edit_text_background"
+            android:hint="输入应用简介文本"
+            android:inputType="textMultiLine"
+            android:padding="10dp"
+            android:minLines="1"
+            android:maxLines="5"/>
+
+        <Button
+            android:id="@+id/saveTextBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/general_background"
+            android:text="保存简介内容"
+            android:textColor="@color/white" />
+
     </LinearLayout>
 </ScrollView>
