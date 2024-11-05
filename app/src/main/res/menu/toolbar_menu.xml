@@ -18,4 +18,17 @@
         android:icon="@drawable/refresh"
         android:title="刷新"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_stu_saveToFile"
+        android:icon="@drawable/savefile"
+        android:title="保存"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_stu_import"
+        android:icon="@drawable/importfile"
+        android:title="导入"
+        app:showAsAction="ifRoom" />
+
 </menu>

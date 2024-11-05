@@ -13,7 +13,6 @@ import java.security.MessageDigest
 
 class DatabaseHelper(context: Context) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
-    private val defaultAvatar = R.drawable.user
 
     companion object {
         private const val DATABASE_NAME = "user.db"
@@ -111,9 +110,9 @@ class DatabaseHelper(context: Context) :
                         "$COLUMN_BIRTH_YEAR," +
                         "$COLUMN_BIRTH_MONTH," +
                         "$COLUMN_BIRTH_DAY) VALUES " +
-                        "($defaultAvatar,\"3305\",\"张三\",\"男\",\"计算机与通信工程学院\",\"计算机科学与技术\",\"音乐\",2001,0,1)," +
-                        "($defaultAvatar,\"3306\",\"李四\",\"女\",\"计算机与通信工程学院\",\"软件工程\",\"跑步\",2002,1,2)," +
-                        "($defaultAvatar,\"3307\",\"王五\",\"女\",\"电气学院\",\"电机工程\",\"游泳\",2003,3,4)"
+                        "(${R.drawable.user},\"3305\",\"张三\",\"男\",\"计算机与通信工程学院\",\"计算机科学与技术\",\"音乐\",2001,0,1)," +
+                        "(${R.drawable.user},\"3306\",\"李四\",\"女\",\"计算机与通信工程学院\",\"软件工程\",\"跑步\",2002,1,2)," +
+                        "(${R.drawable.user},\"3307\",\"王五\",\"女\",\"电气学院\",\"电机工程\",\"游泳\",2003,3,4)"
             val insertStmt = db.compileStatement(insertQuery)
             insertStmt.executeInsert()
             Log.i("初始化数据库", "初始学生信息已添加")
@@ -182,6 +181,56 @@ class DatabaseHelper(context: Context) :
         } catch (e: Exception) {
             Log.e("ERROR", "删除学生数据失败: ${e.message}")
         }
+        return false
+    }
+
+    fun loadStudent(students: MutableList<Student>): Boolean { // 删除学生信息
+        val db = this.writableDatabase
+        try {
+            db.beginTransaction()
+            if (students.size > 0) {
+                val deleteSql =
+                    "DELETE FROM $TABLE_STUDENT"
+                val deleteStmt = db.compileStatement(deleteSql)
+                deleteStmt.executeUpdateDelete()
+                Log.i("操作数据库", "学生信息已全部删除")
+                var insertQuery = // 尝试插入解析的信息
+                    "INSERT INTO $TABLE_STUDENT (" +
+                            "$COLUMN_IMAGE_URL," +
+                            "$COLUMN_STU_ID," +
+                            "$COLUMN_STU_NAME," +
+                            "$COLUMN_SEX," +
+                            "$COLUMN_INSTITUTION," +
+                            "$COLUMN_MAJOR," +
+                            "$COLUMN_HOBBY," +
+                            "$COLUMN_BIRTH_YEAR," +
+                            "$COLUMN_BIRTH_MONTH," +
+                            "$COLUMN_BIRTH_DAY) VALUES "
+
+                for (student in students) {
+                    insertQuery += "(${R.drawable.user},'${student.stuId}'," +
+                            "'${student.stuName}','${student.sex}'," +
+                            "'${student.institution}','${student.major}'," +
+                            "'${student.hobby}',${student.birthYear}," +
+                            "${student.birthMonth},${student.birhday}),"
+                }
+                insertQuery = insertQuery.dropLast(1)
+                Log.i("新增操作", insertQuery)
+
+                val insertStmt = db.compileStatement(insertQuery)
+                insertStmt.executeInsert()
+                Log.i("新增操作执行完成", insertQuery)
+            }
+            db.setTransactionSuccessful()
+            db.endTransaction()
+            db.close()
+            return true
+        } catch (e: Exception) {
+            db.endTransaction()
+            db.close()
+            Log.e("ERROR", "删除学生数据失败: ${e.message}")
+        }
+
         return false
     }
 

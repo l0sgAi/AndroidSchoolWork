@@ -1,6 +1,7 @@
 package com.losgai.works
 
 import android.app.AlertDialog
+import android.content.Context
 import android.icu.util.Calendar
 import android.os.Bundle
 import android.util.Log
@@ -102,7 +103,83 @@ class MainActivity : AppCompatActivity() {
                 true
             }
 
+            R.id.menu_stu_saveToFile -> {
+                saveTofile()
+                true
+            }
+
+            R.id.menu_stu_import -> {
+                importData()
+                true
+            }
+
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun saveTofile() {
+        val sharedPreferences = this.getSharedPreferences("student", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        if (students.isEmpty()) {
+            customToast("没有数据", R.layout.toast_view_e)
+        } else {
+            val studentsString = students.joinToString(".") { student ->
+                "${student.stuId},${student.stuName}," +
+                        "${student.sex},${student.institution}," +
+                        "${student.major},${student.hobby}," +
+                        "${student.birthYear},${student.birthMonth},${student.birhday}"
+            }
+            // 所有学生信息转为字符串
+            editor.putString("studentList", studentsString)
+            editor.apply()
+            customToast("保存当前数据成功", R.layout.toast_view)
+        }
+    }
+
+    private fun importData() {
+        val sharedPreferences = this.getSharedPreferences("student", Context.MODE_PRIVATE)
+        val studentsString = sharedPreferences.getString("studentList", "")!! // !!强制转换为非空
+        val studentList = mutableListOf<Student>()
+        val studentDataArray = studentsString.split('.')
+
+        for (studentData in studentDataArray) {
+            val parts = studentData.split(',')
+            if (parts.size == 9) {
+                val stuId = parts[0]
+                val stuName = parts[1]
+                val sex = parts[2]
+                val institution = parts[3]
+                val major = parts[4]
+                val hobby = parts[5]
+                val birthYear = parts[6].toInt()
+                val birthMonth = parts[7].toInt()
+                val birthday = parts[8].toInt()
+                studentList.add(
+                    Student(
+                        R.drawable.user,
+                        stuId,
+                        stuName,
+                        sex,
+                        institution,
+                        major,
+                        hobby,
+                        birthYear,
+                        birthMonth,
+                        birthday
+                    )
+                )
+            }
+        }
+
+        if (studentList.isNotEmpty()) {
+            databaseHelper.loadStudent(studentList)
+            listViewStudents.adapter = adapterStu
+            students.clear()
+            students.addAll(databaseHelper.getAllStudents())
+            adapterStu.notifyDataSetChanged()
+            customToast("已读取之前保存的数据", R.layout.toast_view)
+        } else {
+            customToast("没有读取到之前保存的数据", R.layout.toast_view_e)
         }
     }
 
@@ -186,7 +263,8 @@ class MainActivity : AppCompatActivity() {
             val selectedInstitution = institution.selectedItem.toString()
             val selectedMajor = major.selectedItem.toString()
 
-            val filteredStudents = databaseHelper.queryStudents(selectedInstitution, selectedMajor, inputName)
+            val filteredStudents =
+                databaseHelper.queryStudents(selectedInstitution, selectedMajor, inputName)
             if (filteredStudents.isNotEmpty()) { // 查到结果，改变适配器
                 filteredStu = StudentAdapter(this, R.layout.inner_list_layout, filteredStudents)
                 listViewStudents.adapter = filteredStu
@@ -310,12 +388,12 @@ class MainActivity : AppCompatActivity() {
             )
             if (data.stuName.isNotEmpty() && data.stuId.isNotEmpty() && data.sex != "null") {
                 // 将新学生对象添加到列表
-                if(databaseHelper.insertStudent(data)){
+                if (databaseHelper.insertStudent(data)) {
                     // 刷新数据
                     students.clear()
                     students.addAll(databaseHelper.getAllStudents())
                     customToast("数据已提交", R.layout.toast_view)
-                }else{
+                } else {
                     customToast("学号冲突", R.layout.toast_view_e)
                 }
 
@@ -511,7 +589,7 @@ class MainActivity : AppCompatActivity() {
             )
             if (data.stuName.isNotEmpty() && data.stuId.isNotEmpty() && data.sex != "null") {
                 // 执行更新
-                if(databaseHelper.updateStudent(data)){
+                if (databaseHelper.updateStudent(data)) {
                     students.clear()
                     students.addAll(databaseHelper.getAllStudents())
                     Log.i("修改操作", "修改成功")
