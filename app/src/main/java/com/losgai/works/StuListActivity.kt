@@ -26,6 +26,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.losgai.works.adapter.StudentAdapter
+import com.losgai.works.dao.StuBaseInfoDao
+import com.losgai.works.dao.StuExtInfoDao
 import com.losgai.works.entity.Student
 import com.losgai.works.helper.DatabaseHelper
 import com.losgai.works.ui.theme.MyApplicationTheme
@@ -37,6 +39,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var filteredStu: StudentAdapter // 这个适配器用于过滤后的学生列表
     private var students: MutableList<Student> = mutableListOf()
     private lateinit var databaseHelper: DatabaseHelper
+    private lateinit var stuInfoDao: StuBaseInfoDao
+    private lateinit var stuExtInfoDao: StuExtInfoDao
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,7 +48,9 @@ class MainActivity : AppCompatActivity() {
 
         databaseHelper = DatabaseHelper(this) // 初始化数据库
         databaseHelper.insertInitialStudentIfEmpty(this) // 插入初始数据
-        students = databaseHelper.getAllStudents()// 创建可变学生列表
+        stuInfoDao = StuBaseInfoDao()
+        stuExtInfoDao = StuExtInfoDao()
+        students = stuInfoDao.getAllStudents(databaseHelper)// 创建可变学生列表
 
         // 绑定控件
         listViewStudents = findViewById(R.id.listViewStudents)
@@ -127,7 +133,8 @@ class MainActivity : AppCompatActivity() {
                 "${student.stuId},${student.stuName}," +
                         "${student.sex},${student.institution}," +
                         "${student.major},${student.hobby}," +
-                        "${student.birthYear},${student.birthMonth},${student.birhday}"
+                        "${student.birthYear},${student.birthMonth},${student.birhday}," +
+                        "${student.intro},${student.motto}"
             }
             // 所有学生信息转为字符串
             editor.putString("studentList", studentsString)
@@ -141,10 +148,12 @@ class MainActivity : AppCompatActivity() {
         val studentsString = sharedPreferences.getString("studentList", "")!! // !!强制转换为非空
         val studentList = mutableListOf<Student>()
         val studentDataArray = studentsString.split('.')
+        Log.i("学生信息字符串： ", studentsString)
 
         for (studentData in studentDataArray) {
             val parts = studentData.split(',')
-            if (parts.size == 9) {
+            Log.i("当前部分： ", parts.size.toString())
+            if (parts.size == 11) {
                 val stuId = parts[0]
                 val stuName = parts[1]
                 val sex = parts[2]
@@ -154,6 +163,8 @@ class MainActivity : AppCompatActivity() {
                 val birthYear = parts[6].toInt()
                 val birthMonth = parts[7].toInt()
                 val birthday = parts[8].toInt()
+                val intro = parts[9]
+                val motto = parts[10]
                 studentList.add(
                     Student(
                         R.drawable.user,
@@ -165,7 +176,9 @@ class MainActivity : AppCompatActivity() {
                         hobby,
                         birthYear,
                         birthMonth,
-                        birthday
+                        birthday,
+                        intro,
+                        motto
                     )
                 )
             }
@@ -175,7 +188,7 @@ class MainActivity : AppCompatActivity() {
             databaseHelper.loadStudent(studentList)
             listViewStudents.adapter = adapterStu
             students.clear()
-            students.addAll(databaseHelper.getAllStudents())
+            students.addAll(stuInfoDao.getAllStudents(databaseHelper))
             adapterStu.notifyDataSetChanged()
             customToast("已读取之前保存的数据", R.layout.toast_view)
         } else {
@@ -186,7 +199,7 @@ class MainActivity : AppCompatActivity() {
     private fun reset(msg: String, isShow: Boolean = true) {
         listViewStudents.adapter = adapterStu
         students.clear()
-        students.addAll(databaseHelper.getAllStudents())
+        students.addAll(stuInfoDao.getAllStudents(databaseHelper))
         adapterStu.notifyDataSetChanged()
         customToast(msg, R.layout.toast_view)
     }
@@ -264,7 +277,12 @@ class MainActivity : AppCompatActivity() {
             val selectedMajor = major.selectedItem.toString()
 
             val filteredStudents =
-                databaseHelper.queryStudents(selectedInstitution, selectedMajor, inputName)
+                stuInfoDao.queryStudents(
+                    databaseHelper,
+                    selectedInstitution,
+                    selectedMajor,
+                    inputName
+                )
             if (filteredStudents.isNotEmpty()) { // 查到结果，改变适配器
                 filteredStu = StudentAdapter(this, R.layout.inner_list_layout, filteredStudents)
                 listViewStudents.adapter = filteredStu
@@ -359,6 +377,9 @@ class MainActivity : AppCompatActivity() {
         var curMonth = calendar.get(Calendar.MONTH)
         var curDay = calendar.get(Calendar.DAY_OF_MONTH)
 
+        val intro = dialogView.findViewById<EditText>(R.id.et_stu_Intro)
+        val motto = dialogView.findViewById<EditText>(R.id.et_motto)
+
         // 初始化DatePicker并设置日期改变监听器
         birthDate.init(year, month, day) { _, year, monthOfYear, dayOfMonth ->
             // 日期被改变时，监听并赋值
@@ -384,14 +405,17 @@ class MainActivity : AppCompatActivity() {
                 hobby.text.toString(),
                 curYear,
                 curMonth,
-                curDay
+                curDay,
+                intro.text.toString(),
+                motto.text.toString()
             )
             if (data.stuName.isNotEmpty() && data.stuId.isNotEmpty() && data.sex != "null") {
                 // 将新学生对象添加到列表
-                if (databaseHelper.insertStudent(data)) {
+                if (stuInfoDao.insertStudent(databaseHelper, data)) {
+                    stuExtInfoDao.insertStudentExt(databaseHelper, data)
                     // 刷新数据
                     students.clear()
-                    students.addAll(databaseHelper.getAllStudents())
+                    students.addAll(stuInfoDao.getAllStudents(databaseHelper))
                     customToast("数据已提交", R.layout.toast_view)
                 } else {
                     customToast("学号冲突", R.layout.toast_view_e)
@@ -428,9 +452,10 @@ class MainActivity : AppCompatActivity() {
                 .setPositiveButton("确认") { _, _ ->
                     // 用户点击确认后，执行删除操作
                     val stuId = itemStu.stuId
-                    databaseHelper.deleteStudent(stuId)
+                    stuInfoDao.deleteStudent(databaseHelper, stuId)
+                    stuExtInfoDao.deleteStudentExt(databaseHelper, stuId)
                     students.clear()
-                    students.addAll(databaseHelper.getAllStudents())
+                    students.addAll(stuInfoDao.getAllStudents(databaseHelper))
 
                     Log.i("删除操作", "删除成功$students")
 
@@ -559,6 +584,11 @@ class MainActivity : AppCompatActivity() {
         var curMonth = itemStu.birthMonth
         var curDay = itemStu.birhday
 
+        val intro = dialogView.findViewById<EditText>(R.id.et_stu_Intro)
+        intro.setText(itemStu.intro)
+        val motto = dialogView.findViewById<EditText>(R.id.et_motto)
+        motto.setText(itemStu.motto)
+
         // 初始化DatePicker并设置日期改变监听器
         birthDate.init(year, month, day) { _, year, monthOfYear, dayOfMonth ->
             // 日期被改变时，监听并赋值
@@ -585,13 +615,16 @@ class MainActivity : AppCompatActivity() {
                 hobby.text.toString(),
                 curYear,
                 curMonth,
-                curDay
+                curDay,
+                intro.text.toString(),
+                motto.text.toString()
             )
             if (data.stuName.isNotEmpty() && data.stuId.isNotEmpty() && data.sex != "null") {
                 // 执行更新
-                if (databaseHelper.updateStudent(data)) {
+                if (stuInfoDao.updateStudent(databaseHelper, data) &&
+                    stuExtInfoDao.updateStudentExt(databaseHelper, data)) {
                     students.clear()
-                    students.addAll(databaseHelper.getAllStudents())
+                    students.addAll(stuInfoDao.getAllStudents(databaseHelper))
                     Log.i("修改操作", "修改成功")
                     customToast("数据已提交", R.layout.toast_view)
                 } else {

@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.losgai.works.dao.StuBaseInfoDao
 import com.losgai.works.helper.DatabaseHelper
 import com.losgai.works.ui.theme.MyApplicationTheme
 
@@ -27,13 +28,16 @@ class AboutActivity : ComponentActivity() {
     private lateinit var phoneBtn: Button
     private lateinit var emailBtn: Button
     private lateinit var saveAboutTextBtn: Button
+    private lateinit var stuInfoDao: StuBaseInfoDao
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.about_layout) // 进入关于页面
         databaseHelper = DatabaseHelper(this)
-        databaseHelper.insertInitialUserIfEmpty("admin", "123456",this)
+        databaseHelper.insertInitialUserIfEmpty("admin", "123456", this)
         databaseHelper.insertInitialStudentIfEmpty(this)
+        stuInfoDao = StuBaseInfoDao()
 
         // 尝试填入保存数据
         val aboutText = findViewById<EditText>(R.id.aboutIntro)
@@ -42,7 +46,7 @@ class AboutActivity : ComponentActivity() {
         aboutText.setText(savedText)
 
         saveAboutTextBtn = findViewById(R.id.saveTextBtn)
-        saveAboutTextBtn.setOnClickListener{
+        saveAboutTextBtn.setOnClickListener {
             saveAboutText(sharedPreferences)
         }
 
@@ -54,12 +58,14 @@ class AboutActivity : ComponentActivity() {
         emailBtn = findViewById(R.id.emailBtn)
         emailBtn.setOnClickListener {
             val recipient = "xxxxxxxxx@gmail.com" // 邮箱地址
-            val subject = "学生信息" // 主题
-            val body = databaseHelper.getAllStudents().joinToString("\n\n") { student ->
-                        "学号：${student.stuId}\n" + "姓名: ${student.stuName}\n" +
+            val subject = "学生基本信息" // 主题
+            val body = stuInfoDao.getAllStudents(databaseHelper).joinToString("\n\n") { student ->
+                "学号：${student.stuId}\n" + "姓名: ${student.stuName}\n" +
                         "性别: ${student.sex}\n" + "学院: ${student.institution}\n" +
                         "专业: ${student.major}\n" + "爱好: ${student.hobby}\n" +
-                        "生日: ${student.birthYear}-${student.birthMonth}-${student.birhday}\n"}// 正文学生信息
+                        "生日: ${student.birthYear}-${student.birthMonth}-${student.birhday}\n" +
+                        "个人简介: ${student.intro}\n" + "左右铭: ${student.motto}\n"
+            } // 正文学生信息
 
             val intent = Intent(Intent.ACTION_SENDTO).apply {
                 data = Uri.parse("mailto:")
@@ -71,8 +77,9 @@ class AboutActivity : ComponentActivity() {
         }
     }
 
-    private fun saveAboutText(sharedPreferences:SharedPreferences) {
-        sharedPreferences.edit().putString("about", findViewById<EditText>(R.id.aboutIntro).text.toString()).apply()
+    private fun saveAboutText(sharedPreferences: SharedPreferences) {
+        sharedPreferences.edit()
+            .putString("about", findViewById<EditText>(R.id.aboutIntro).text.toString()).apply()
         customToast("保存简介成功", R.layout.toast_view)
     }
 

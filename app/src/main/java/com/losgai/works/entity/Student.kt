@@ -10,5 +10,7 @@ class Student(
     var hobby: String,
     var birthYear: Int,
     var birthMonth: Int,
-    var birhday: Int
+    var birhday: Int,
+    var intro: String,
+    var motto: String
 ) {}
