@@ -1,9 +1,11 @@
 package com.losgai.works
 
 import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
 import android.content.Context
-import com.losgai.works.helper.DatabaseHelper
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -13,10 +15,12 @@ import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.annotation.RequiresApi
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.losgai.works.helper.DatabaseHelper
 import com.losgai.works.helper.DatabaseHelper.Companion.COLUMN_PASSWORD
 import com.losgai.works.helper.DatabaseHelper.Companion.COLUMN_USERNAME
 import com.losgai.works.helper.DatabaseHelper.Companion.TABLE_NAME
@@ -33,6 +37,16 @@ class LoginActivity : ComponentActivity() {
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     private lateinit var saveAccount: Switch
 
+    private val dayOfWeekReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val dayOfWeek = intent.getStringExtra("day_of_week")
+            if (dayOfWeek != null) {
+                customToast("今天是$dayOfWeek", R.layout.toast_view)
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.login_layout) // 首先进入登录页面
@@ -58,8 +72,9 @@ class LoginActivity : ComponentActivity() {
             if (authenticateUser(username, password)) {
                 // 保存登陆成功的数据
                 saveAccount = findViewById(R.id.saveAccount)
-                if(saveAccount.isChecked){
-                    val sharedPreferences = this.getSharedPreferences("config", Context.MODE_PRIVATE)
+                if (saveAccount.isChecked) {
+                    val sharedPreferences =
+                        this.getSharedPreferences("config", Context.MODE_PRIVATE)
                     val editor = sharedPreferences.edit()
                     editor.putString("username", username)
                     editor.putString("password", password)
@@ -78,7 +93,7 @@ class LoginActivity : ComponentActivity() {
         registerBtn.setOnClickListener {
             val username = usernameEditText.text.toString()
             val password = passwordEditText.text.toString()
-            if(registerUser(username, password)){
+            if (registerUser(username, password)) {
                 customToast("注册成功", R.layout.toast_view)
             } else {
                 customToast("注册失败，请检查用户名和密码", R.layout.toast_view_e)
@@ -89,6 +104,21 @@ class LoginActivity : ComponentActivity() {
         aboutBtn.setOnClickListener {
             val intent = Intent(this, AboutActivity::class.java)
             startActivity(intent)
+        }
+
+
+        registerReceiver(
+            dayOfWeekReceiver,
+            IntentFilter("com.losgai.works.service.WEEKDAY"),
+            RECEIVER_EXPORTED
+        )
+
+        findViewById<Button>(R.id.getWeekdayBtn).setOnClickListener {
+            val intent = Intent().setClassName(
+                "com.losgai.works",
+                "com.losgai.works.service.QueryWeekdayService"
+            )
+            startService(intent)
         }
     }
 
@@ -109,16 +139,17 @@ class LoginActivity : ComponentActivity() {
         val result = cursor.count > 0
         cursor.close()
 
-        if(result){ // 不能注册相同用户名
+        if (result) { // 不能注册相同用户名
             customToast("用户名冲突", R.layout.toast_view_e)
             return false
         }
 
         val dbWrite = databaseHelper.writableDatabase
-        if(username.isNotEmpty() && password.isNotEmpty()){
+        if (username.isNotEmpty() && password.isNotEmpty()) {
             val encryptedPassword = encryptPassword(password)
             Log.i("INFO：", encryptedPassword)
-            val insertQuery = "INSERT INTO $TABLE_NAME ($COLUMN_USERNAME, $COLUMN_PASSWORD) VALUES (?,?)"
+            val insertQuery =
+                "INSERT INTO $TABLE_NAME ($COLUMN_USERNAME, $COLUMN_PASSWORD) VALUES (?,?)"
             val insertStmt = dbWrite.compileStatement(insertQuery)
             insertStmt.bindString(1, username)
             insertStmt.bindString(2, encryptedPassword)
@@ -156,7 +187,7 @@ class LoginActivity : ComponentActivity() {
                 val hex = value.toInt() and (0xFF)
                 val hexStr = Integer.toHexString(hex)
                 println(hexStr)
-                if(hexStr.length == 1){
+                if (hexStr.length == 1) {
                     stringBuilder.append(0).append(hexStr)
                 } else {
                     stringBuilder.append(hexStr)
