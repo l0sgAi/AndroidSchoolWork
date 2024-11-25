@@ -1,8 +1,12 @@
 package com.losgai.works
 
 import android.app.AlertDialog
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.icu.util.Calendar
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -20,6 +24,7 @@ import android.widget.RadioGroup
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,7 +47,25 @@ class MainActivity : AppCompatActivity() {
     private lateinit var stuInfoDao: StuBaseInfoDao
     private lateinit var stuExtInfoDao: StuExtInfoDao
 
+    private val studentRecordBroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val studentId = intent.getStringExtra("studentId")
+            if (studentId != null) {
+                try {
+                    Log.i("StudentRecordReceiver", "接收到学生记录广播，学号为: $studentId")
+                    showDialog(adapterStu, studentId)
+                } catch (e: Exception) {
+                    Log.e("学号读取服务错误", e.message.toString())
+                }
+            } else {
+                customToast("未检测读取到学生学号", R.layout.toast_view_e)
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.stu_list_main)
 
@@ -61,6 +84,20 @@ class MainActivity : AppCompatActivity() {
 
         val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar_stu)
         setSupportActionBar(toolbar)
+
+        // 注册监听器
+        registerReceiver(
+            studentRecordBroadcastReceiver,
+            IntentFilter("com.losgai.works.service.HAS_STUDENT_RECORD"),
+            RECEIVER_EXPORTED
+        )
+
+        // 启动服务
+        val intent = Intent().setClassName(
+            "com.losgai.works",
+            "com.losgai.works.service.ClipboardMonitorService"
+        )
+        startService(intent)
 
         // 设置长按监听器
         listViewStudents.setOnItemLongClickListener { parent, view, position, id ->
@@ -295,15 +332,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showDialog(adapterStu: StudentAdapter) {
+    private fun showDialog(adapterStu: StudentAdapter, item: String? = "") {
         val builder = AlertDialog.Builder(this)
         val inflater = LayoutInflater.from(this)
         val dialogView = inflater.inflate(R.layout.activity_main, null)
         builder.setView(dialogView)
 
-
         val name: EditText = dialogView.findViewById(R.id.et_name)
         val stuId: EditText = dialogView.findViewById(R.id.et_student_id)
+        if (item != "") stuId.setText(item)
+
         var sex = "null"
         val sexGroup: RadioGroup = dialogView.findViewById(R.id.sexGroup)
         sexGroup.setOnCheckedChangeListener { group, checkedId ->
@@ -395,37 +433,42 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
 
         buttonSubmit.setOnClickListener {
-            val data = Student(
-                R.drawable.user,
-                stuId.text.toString(),
-                name.text.toString(),
-                sex,
-                institution.selectedItem.toString(),
-                major.selectedItem.toString(),
-                hobby.text.toString(),
-                curYear,
-                curMonth,
-                curDay,
-                intro.text.toString(),
-                motto.text.toString()
-            )
-            if (data.stuName.isNotEmpty() && data.stuId.isNotEmpty() && data.sex != "null") {
-                // 将新学生对象添加到列表
-                if (stuInfoDao.insertStudent(databaseHelper, data)) {
-                    stuExtInfoDao.insertStudentExt(databaseHelper, data)
-                    // 刷新数据
-                    students.clear()
-                    students.addAll(stuInfoDao.getAllStudents(databaseHelper))
-                    customToast("数据已提交", R.layout.toast_view)
+            Log.i("新增数据", "showDialog ${stuId.text}")
+            try{
+                val data = Student(
+                    R.drawable.user,
+                    stuId.text.toString(),
+                    name.text.toString(),
+                    sex,
+                    institution.selectedItem.toString(),
+                    major.selectedItem.toString(),
+                    hobby.text.toString(),
+                    curYear,
+                    curMonth,
+                    curDay,
+                    intro.text.toString(),
+                    motto.text.toString()
+                )
+                Log.i("新增数据", "showDialog $data")
+                if (data.stuName.isNotEmpty() && data.stuId.isNotEmpty() && data.sex != "null") {
+                    // 将新学生对象添加到列表
+                    if (stuInfoDao.insertStudent(databaseHelper, data)) {
+                        stuExtInfoDao.insertStudentExt(databaseHelper, data)
+                        // 刷新数据
+                        students.clear()
+                        students.addAll(stuInfoDao.getAllStudents(databaseHelper))
+                        customToast("数据已提交", R.layout.toast_view)
+                    } else {
+                        customToast("学号冲突", R.layout.toast_view_e)
+                    }
+                    // 通知适配器数据已改变
+                    adapterStu.notifyDataSetChanged()
+                    dialog.dismiss()
                 } else {
-                    customToast("学号冲突", R.layout.toast_view_e)
+                    customToast("修改数据失败，至少输入姓名、性别和学号！", R.layout.toast_view_e)
                 }
-
-                // 通知适配器数据已改变
-                adapterStu.notifyDataSetChanged()
-                dialog.dismiss()
-            } else {
-                customToast("修改数据失败，至少输入姓名、性别和学号！", R.layout.toast_view_e)
+            }catch (e: Exception){
+                Log.e("提交错误", "showDialog ${e.message}")
             }
         }
     }
@@ -619,10 +662,12 @@ class MainActivity : AppCompatActivity() {
                 intro.text.toString(),
                 motto.text.toString()
             )
+            Log.i("学生新增", "data: $data")
             if (data.stuName.isNotEmpty() && data.stuId.isNotEmpty() && data.sex != "null") {
                 // 执行更新
                 if (stuInfoDao.updateStudent(databaseHelper, data) &&
-                    stuExtInfoDao.updateStudentExt(databaseHelper, data)) {
+                    stuExtInfoDao.updateStudentExt(databaseHelper, data)
+                ) {
                     students.clear()
                     students.addAll(stuInfoDao.getAllStudents(databaseHelper))
                     Log.i("修改操作", "修改成功")

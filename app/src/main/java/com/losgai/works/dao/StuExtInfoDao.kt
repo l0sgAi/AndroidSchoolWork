@@ -29,7 +29,7 @@ class StuExtInfoDao { // 学生表的扩展操作
                         "$COLUMN_STU_ID," +
                         "$COLUMN_INTRO," +
                         "$COLUMN_MOTTO) VALUES " +
-                        "($stuId,'$intro','$motto')"
+                        "('$stuId','$intro','$motto')"
             val insertStmt = dbWrite.compileStatement(insertQuery)
             insertStmt.executeInsert()
             dbWrite.close()

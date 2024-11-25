@@ -36,7 +36,7 @@ class StuBaseInfoDao { // 学生表的基础操作
 
         // 保证学生id不重复
         val dbRead = helper.readableDatabase
-        val countQuery = "SELECT COUNT(*) FROM $TABLE_STUDENT WHERE $COLUMN_STU_ID = $stuId"
+        val countQuery = "SELECT COUNT(*) FROM $TABLE_STUDENT WHERE $COLUMN_STU_ID = '$stuId'"
         val cursor = dbRead.rawQuery(countQuery, null)
         cursor.moveToFirst()
         val count = cursor.getInt(0)
