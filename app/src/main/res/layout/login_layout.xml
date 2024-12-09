@@ -115,5 +115,15 @@
             android:text="调用返回日期"
             android:textColor="@color/white" />
 
+        <Button
+            android:id="@+id/getWeatherBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/general_background"
+            android:text="查看天气信息"
+            android:textColor="@color/white" />
+
     </LinearLayout>
 </ScrollView>

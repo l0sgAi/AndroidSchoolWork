@@ -9,4 +9,5 @@
     <string name="title_activity_login">LoginActivity</string>
     <string name="title_activity_loading">LoadingActivity</string>
     <string name="title_activity_about">AboutActivity</string>
+    <string name="title_activity_weathe">WeatheActivity</string>
 </resources>

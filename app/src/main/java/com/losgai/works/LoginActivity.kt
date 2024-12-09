@@ -32,6 +32,7 @@ class LoginActivity : ComponentActivity() {
     private lateinit var loginBtn: Button
     private lateinit var aboutBtn: Button
     private lateinit var registerBtn: Button
+    private lateinit var weatherBtn: Button
     private lateinit var databaseHelper: DatabaseHelper
 
     @SuppressLint("UseSwitchCompatOrMaterialCode")
@@ -103,6 +104,12 @@ class LoginActivity : ComponentActivity() {
         aboutBtn = findViewById(R.id.aboutBtn)
         aboutBtn.setOnClickListener {
             val intent = Intent(this, AboutActivity::class.java)
+            startActivity(intent)
+        }
+
+        weatherBtn = findViewById(R.id.getWeatherBtn)
+        weatherBtn.setOnClickListener {
+            val intent = Intent(this, WeatheActivity::class.java)
             startActivity(intent)
         }
 
